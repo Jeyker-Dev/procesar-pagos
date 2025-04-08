@@ -14,7 +14,7 @@ trait ConsumeExternalServices
         ]);
 
         if (method_exists($this, 'resolveAuthorization')) {
-            $this->resolveAuthotization($queryParams, $formParams, $headers);
+            $this->resolveAuthorization($queryParams, $formParams, $headers);
         }
 
         $response = $client->request($method, $requestUrl, [
@@ -26,7 +26,7 @@ trait ConsumeExternalServices
         $response = $response->getBody()->getContents();
 
         if (method_exists($this, 'decodeResponse')) {
-        $response = $this->decodeResponse($response);
+            $response = $this->decodeResponse($response);
         }
 
         return $response;
