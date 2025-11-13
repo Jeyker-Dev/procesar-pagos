@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\ConsumeExternalServices;
+use Illuminate\Routing\Redirector;
 
 class PaypalService
 {
@@ -34,6 +35,38 @@ class PaypalService
         $credentials = base64_encode("{$this->clientId}:{$this->clientSecret}");
 
         return "Basic {$credentials}";
+    }
+
+    public function handlePayment(array $request): Redirector
+    {
+        $order = $this->createOrder($request['amount'], $request['currency']);
+
+        $orderLinks = collect($order->links);
+
+        $approve = $orderLinks->where('rel', 'approve')->first();
+
+        session()->put('approvalId', $order->id);
+
+        return redirect($approve->href);
+    }
+
+    public function handleApproval()
+    {
+        if (session()->has('approvalId')) {
+            $approvalId = session()->get('approvalId');
+
+            $payment = $this->capturePayment($approvalId);
+
+            $name = $payment->payer->name->given_name;
+            $payment = $payment->purchase_units[0]->payments->captures[0]->amount;
+            $amount = $payment->value;
+            $currency = $payment->currency_code;
+
+
+            return redirect()->route('dashboard')->with('success', "Thanks {$name}. We received your {$amount}{$currency} payment.");
+        }
+
+        return redirect()->route('dashboard')->withErrors('We cannnot capture your payment, Try again, please.');
     }
 
     public function createOrder($value, $currency)

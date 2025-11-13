@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Http\Controllers\PaymentController;
 
-Route::view('/', 'welcome');
+Route::view('/', 'welcome')->name('home');
 
 Volt::route('/dashboard', 'app.dashboard')
     ->middleware(['auth', 'verified'])

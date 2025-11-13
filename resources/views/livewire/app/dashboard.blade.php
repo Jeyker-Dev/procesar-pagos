@@ -4,38 +4,55 @@ use Livewire\Attributes\{Layout};
 use Livewire\Volt\Component;
 use App\Models\Currency;
 use App\Models\PaymentPlatform;
+use App\Services\PaypalService;
 
 new
 #[Layout('layouts.app')]
 class extends Component {
-    public object $currencies;
-    public object $paymentPlatforms;
     public int $amount;
+    public ?int $paymentPlatform = null;
+    public string $currency = "";
 
-    public function mount(): void
+    public function with(): array
     {
-        $this->paymentPlatforms = PaymentPlatform::all();
-        $this->currencies = Currency::all();
+        return [
+            'currencies' => Currency::all(),
+            'paymentPlatforms' => PaymentPlatform::all(),
+        ];
     }
 
     public function pay(): void
     {
         $validated = $this->validate([
             'amount' => 'required|numeric',
-            'currencies' => 'required',
-            'paymentPlatforms' => 'required|exists:payment_platforms,id',
+            'currency' => 'required',
+            'paymentPlatform' => 'required|exists:payment_platforms,id',
         ]);
 
-        dd($validated);
+        $paymentPlatform = resolve(PaypalService::class);
+
+        $paymentPlatform->handlePayment($validated);
     }
 }; ?>
 
-<div x-data="{ selectedPlatform: @entangle('selectedPlatform').live }">
+<div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
+
+    @if(session()->has('success'))
+        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session()->has('error'))
+        <div class="mb-4 rounded bg-red-100 text-red-800 px-4 py-2">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -50,7 +67,8 @@ class extends Component {
 
                                 <flux:text class="my-2 text-black">How Much Do You Want to Pay?</flux:text>
                                 <flux:input.group class="mb-4">
-                                    <flux:select wire:model="currencies" class="max-w-fit">
+                                    <flux:select wire:model="currency" class="max-w-fit">
+                                        <flux:select.option value="">Select a coin</flux:select.option>
                                         @foreach($currencies as $currency)
                                             <flux:select.option>{{ strtoupper( $currency->iso) }}</flux:select.option>
                                         @endforeach
@@ -58,13 +76,16 @@ class extends Component {
                                     <flux:input wire:model="amount" class="" placeholder="$99.99"/>
                                 </flux:input.group>
 
-                                <flux:radio.group wire:model="paymentPlatforms" label="Select the desire payment platform" variant="cards" class="max-sm:flex-col">
+                                <flux:radio.group wire:model="paymentPlatform"
+                                                  label="Select the desire payment platform" variant="cards"
+                                                  class="max-sm:flex-col">
                                     @foreach($paymentPlatforms as $paymentPlatform)
                                         <flux:radio class="" value="{{ $paymentPlatform->id }}">
-                                            <flux:radio.indicator />
+                                            <flux:radio.indicator/>
 
                                             <div class="flex-1">
-                                                <img src="{{ asset($paymentPlatform->image) }}" alt="Platform Image" class="object-cover object-center">
+                                                <img src="{{ asset($paymentPlatform->image) }}" alt="Platform Image"
+                                                     class="object-cover object-center">
                                             </div>
                                         </flux:radio>
                                     @endforeach
