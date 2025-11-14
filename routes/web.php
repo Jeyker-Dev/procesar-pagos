@@ -14,9 +14,10 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::post('/payments/pay', [PaymentController::class, 'pay'])->name('pay');
-Route::get('/payments/approval', [PaymentController::class, 'approval'])->name('approval');
-Route::get('/payments/cancelled', [PaymentController::class, 'cancelled'])->name('cancelled');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payments/approval', [PaymentController::class, 'approval'])->name('approval');
+    Route::get('/payments/cancelled', [PaymentController::class, 'cancelled'])->name('cancelled');
+});
 
 
 require __DIR__.'/auth.php';

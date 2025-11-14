@@ -66,7 +66,7 @@ class PaypalService
             return redirect()->route('dashboard')->with('success', "Thanks {$name}. We received your {$amount}{$currency} payment.");
         }
 
-        return redirect()->route('dashboard')->withErrors('We cannnot capture your payment, Try again, please.');
+        return redirect()->route('dashboard')->with('error','We cannnot capture your payment, Try again, please.');
     }
 
     public function createOrder($value, $currency)
@@ -82,7 +82,7 @@ class PaypalService
                         0 => [
                             'amount' => [
                                 'currency_code' => strtoupper($currency),
-                                'value' => $value,
+                                'value' => round($value * $factor = $this->resolveFactor($currency)) / $factor,
                             ],
                         ],
                     ],
@@ -110,5 +110,16 @@ class PaypalService
                 'Content-Type' => 'application/json',
             ],
         );
+    }
+
+    public function resolveFactor($currency)
+    {
+        $zeroDecimalCurrencies = ['JPY'];
+
+        if (in_array(strtoupper($currency), $zeroDecimalCurrencies)) {
+            return 1;
+        }
+
+        return 100;
     }
 }

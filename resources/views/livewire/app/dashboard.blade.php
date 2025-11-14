@@ -5,13 +5,20 @@ use Livewire\Volt\Component;
 use App\Models\Currency;
 use App\Models\PaymentPlatform;
 use App\Services\PaypalService;
+use App\Resolvers\PaymentPlatformResolver;
 
 new
 #[Layout('layouts.app')]
 class extends Component {
-    public int $amount;
+    public ?float $amount = null;
     public ?int $paymentPlatform = null;
     public string $currency = "";
+    protected ?PaymentPlatformResolver $paymentPlatformResolver = null;
+
+    public function boot(PaymentPlatformResolver $paymentPlatformResolver): void
+    {
+        $this->paymentPlatformResolver = $paymentPlatformResolver;
+    }
 
     public function with(): array
     {
@@ -29,7 +36,9 @@ class extends Component {
             'paymentPlatform' => 'required|exists:payment_platforms,id',
         ]);
 
-        $paymentPlatform = resolve(PaypalService::class);
+        $paymentPlatform = $this->paymentPlatformResolver->resolveService($validated['paymentPlatform']);
+
+        session()->put('paymentPlatformId', $validated['paymentPlatform']);
 
         $paymentPlatform->handlePayment($validated);
     }
