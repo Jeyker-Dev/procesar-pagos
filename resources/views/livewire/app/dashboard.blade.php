@@ -6,6 +6,7 @@ use App\Models\Currency;
 use App\Models\PaymentPlatform;
 use App\Services\PaypalService;
 use App\Resolvers\PaymentPlatformResolver;
+use App\Services\StripeService;
 
 new
 #[Layout('layouts.app')]
@@ -13,6 +14,7 @@ class extends Component {
     public ?float $amount = null;
     public ?int $paymentPlatform = null;
     public string $currency = "";
+    public ?string $paymentMethod = null;
     protected ?PaymentPlatformResolver $paymentPlatformResolver = null;
 
     public function boot(PaymentPlatformResolver $paymentPlatformResolver): void
@@ -34,6 +36,7 @@ class extends Component {
             'amount' => 'required|numeric',
             'currency' => 'required',
             'paymentPlatform' => 'required|exists:payment_platforms,id',
+            'paymentMethod' => 'nullable|string',
         ]);
 
         $paymentPlatform = $this->paymentPlatformResolver->resolveService($validated['paymentPlatform']);
@@ -63,7 +66,12 @@ class extends Component {
         </div>
     @endif
 
-    <div class="py-12">
+    <div
+        x-data='{
+        selectedPlatform: $wire.entangle("paymentPlatform"),
+        names: @json($paymentPlatforms->pluck("name", "id")),
+    }'
+        class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
@@ -72,7 +80,7 @@ class extends Component {
                             <h2 class="">Make a Payment</h2>
                         </div>
                         <div class="px-4 py-5 sm:p-6">
-                            <form wire:submit.prevent="pay" class="p-6">
+                            <form id="payment-form" wire:submit.prevent="pay" class="p-6">
 
                                 <flux:text class="my-2 text-black">How Much Do You Want to Pay?</flux:text>
                                 <flux:input.group class="mb-4">
@@ -100,7 +108,26 @@ class extends Component {
                                     @endforeach
                                 </flux:radio.group>
 
-                                <flux:button class="my-4" type="submit" variant="primary">Pay</flux:button>
+                                <div>
+                                    <template x-if="selectedPlatform">
+                                        <div>
+                                            <template x-if="names[selectedPlatform] == 'PayPal'">
+                                                <div>
+                                                    <p>
+                                                        PayPal will redirect you to their site to complete the payment.
+                                                    </p>
+                                                </div>
+                                            </template>
+
+                                            <template x-if="names[selectedPlatform] == 'Stripe'">
+                                                <div class="mt-5">
+                                                    <x-panel.stripe-payment/>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                                <flux:button id="pay-button" class="my-4" type="submit" variant="primary">Pay</flux:button>
                             </form>
                         </div>
                     </div>
@@ -108,5 +135,4 @@ class extends Component {
             </div>
         </div>
     </div>
-
 </div>

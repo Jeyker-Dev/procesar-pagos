@@ -50,7 +50,7 @@ class PaypalService
         return redirect($approve->href);
     }
 
-    public function handleApproval()
+    public function handleApproval(): Redirector
     {
         if (session()->has('approvalId')) {
             $approvalId = session()->get('approvalId');

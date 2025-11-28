@@ -15,6 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         @fluxAppearance
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -36,5 +37,6 @@
         </div>
 
         @fluxScripts
+        @stack('scripts')
     </body>
 </html>
