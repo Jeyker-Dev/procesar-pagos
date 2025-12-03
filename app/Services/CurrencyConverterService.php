@@ -36,7 +36,7 @@ class CurrencyConverterService
 
             $response = json_decode($response, true);
 
-            return round((float) $response['result'], 2);
+            return $response['result'];
         });
     }
 
