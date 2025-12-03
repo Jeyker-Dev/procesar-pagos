@@ -31,6 +31,11 @@ return [
         'class' => StripeService::class,
     ],
 
+    'exchangerate' => [
+        'base_uri' => env('EXCHANGERATE_BASE_URI'),
+        'access_key' => env('EXCHANGERATE_ACCESS_KEY'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
