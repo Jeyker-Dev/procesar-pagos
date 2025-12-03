@@ -32,11 +32,9 @@ class CurrencyConverterService
                 'access_key' => $this->accessKey,
             ];
 
-            $response = Http::timeout(5)->get("{$this->baseUri}/convert", $convertion);
+            $response = $this->makeRequest('GET', 'convert', $convertion);
 
-            if (! $response->ok() || ! isset($response['result'])) {
-                throw new Exception('Error al obtener tasa de conversión');
-            }
+            $response = json_decode($response, true);
 
             return round((float) $response['result'], 2);
         });
