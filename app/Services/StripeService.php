@@ -62,6 +62,12 @@ class StripeService
 
             $intent = json_decode($intent);
 
+            if ($intent->status === 'requires_action') {
+                $clientSecret = $intent->client_secret;
+
+                return view('stripe.3d-secure')->with('clientSecret', $clientSecret);
+            }
+
             if ( $intent->status == 'succeeded') {
                $currency = strtoupper($intent->currency);
                $amount = $intent->amount / $this->resolveFactor($currency);

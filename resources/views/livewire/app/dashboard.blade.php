@@ -111,9 +111,9 @@ class extends Component {
                                 <div>
                                     <template x-if="selectedPlatform">
                                         <div>
-                                            <template x-if="names[selectedPlatform] == 'PayPal'">
+                                            <template x-if="names[selectedPlatform] == 'Paypal'">
                                                 <div>
-                                                    <p>
+                                                    <p class="my-6 text-black">
                                                         PayPal will redirect you to their site to complete the payment.
                                                     </p>
                                                 </div>
